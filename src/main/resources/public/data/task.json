@@ -1,0 +1,12 @@
+[
+  {
+    "name": "测试任务",
+    "class_name": "com.sdlc.vrtask.task.core.TestTask",
+    "path": "xxxxx",
+    "log_path":"xxx",
+    "status": 1,
+    "descr": "测试任务了....",
+    "group": "test",
+    "cronExpression": "* 0/20 * * * ?"
+  }
+]

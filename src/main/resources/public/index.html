@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<!--
+	作者：fomky@foxmail.com
+	时间：2017-04-11
+	描述：任务托管系统 , 管理界面
+-->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>任务托管系统</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
+    <link rel="stylesheet" type="text/css" href="dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="dist/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" type="text/css" href="dist/css/index.css"/>
+    <script src="dist/js/jquery-3.1.0.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="dist/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/template">
+
+		</script>
+</head>
+
+<body>
+<div id="apps">
+    <header>
+        <nav class="navbar navbar-default">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">
+                        Task
+                    </a>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+    <!--中心地区-->
+    <div class="container">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#home" aria-controls="home" role="tab" data-toggle="tab">当前任务列表
+                    <button @click="loadList" class="btn btn-xs btn-link" title="刷新">
+                        <span class="glyphicon glyphicon-refresh"></span></button>
+                    <button type="button" @click="addTaskClick" title="添加任务"
+                            class="btn btn-xs btn-link" data-toggle="modal" data-target="#add_task">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">执行日志
+                    <button @click="refreshLogList" class="btn  btn-xs btn-link" title="刷新">
+                        <span class="glyphicon glyphicon-refresh"></span></button>
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">基础任务</a>
+            </li>
+        </ul>
+        <!-- Tab panes -->
+        <div class="tab-content" style="border: 1px solid #ddd;border-top: transparent;">
+            <div role="tabpanel" class="tab-pane active table-responsive" id="home">
+                <table class="table table-hover ">
+                    <thead>
+                    <tr>
+                        <td>名称</td>
+                        <!--<td>说明</td>-->
+                        <td>类名</td>
+                        <td>时间参数</td>
+                        <td>注册(启动)时间</td>
+                        <!--<td>上次执行时间</td>-->
+                        <td>下次执行时间</td>
+                        <td>操作</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(obj,index) in list">
+                        <td>{{obj.task.name}}</td>
+                        <!--<td>{{obj.task.descr}}</td>-->
+                        <td>{{obj.task.class_name}}</td>
+                        <td>{{obj.task.cronExpression}}</td>
+                        <td>{{new Date(obj.startTime).toLocaleString()}}</td>
+                        <!--<td>{{new Date(obj.previousFireTime).toLocaleString()}}</td>-->
+                        <td>{{new Date(obj.nextFireTime).toLocaleString()}}</td>
+                        <td>
+                            <a class="btn btn-success btn-xs" @click="editTask">修改</a>
+                            <a class="btn btn-danger btn-xs" @click="deleteTask">删除</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="profile">
+                <div class="btn-list" style="display: flex;flex-flow: row nowrap;align-items: center;padding: 10px;border-bottom: 1px solid gray;">
+                    <label>选择任务: &nbsp;</label>
+                    <select class="form-control" @change="selectTask" :value="log_list_id" title="任务" style="width: auto;">
+                        <option value="-1" style="line-height: 30px;">全部</option>
+                        <option v-for="(obj,index) in list" :value="obj.task.id">{{obj.task.name}}</option>
+                    </select>
+                </div>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>任务 ID</th>
+                        <th>任务名称</th>
+                        <th>开始时间</th>
+                        <th>结束时间</th>
+                        <th>状态</th>
+                        <th>错误信息</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(obj,index) in log_list">
+                        <td>{{obj.task_id}}</td>
+                        <td>{{obj.name}}</td>
+                        <td>{{new Date(obj.startTime).toLocaleString()}}</td>
+                        <td>{{new Date(obj.endTime).toLocaleString()}}</td>
+                        <td>{{obj.status==1?'成功':'失败'}}</td>
+                        <td>{{obj.error}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="messages">...</div>
+            <div role="tabpanel" class="tab-pane" id="settings">...</div>
+        </div>
+    </div>
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="add_task" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">{{isEdit?'更新任务':'添加任务'}}</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">任务(Key)</label>
+                            <div class="col-sm-10">
+                                <input type="text" :readonly="isEdit" class="form-control" v-model="name" placeholder="Name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">选择任务</label>
+                            <div class="col-sm-10">
+                                <select id="task-selects" :disabled="isEdit" @change="choseTask" class="form-control" title="">
+                                    <option value="-1">请选择</option>
+                                    <option v-for="(obj,index) in clist" :value="index">
+                                        {{obj.name}}({{obj.class_name}})
+                                    </option>
+                                </select>
+                                <input type="hidden" v-model="chose.class_name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Task名称</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="descr" readonly placeholder="Name"
+                                       v-model="chose.name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">任务组</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="group" readonly placeholder="任务名称"
+                                       v-model="chose.group">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">LogPath</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="log_path" readonly
+                                       v-model="chose.log_path" placeholder="日志目录">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Path</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="path" readonly placeholder="文件路径"
+                                       v-model="chose.path">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Expression</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="cronExpression"
+                                       v-model="chose.cronExpression" placeholder="任务执行时间">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">描述</label>
+                            <div class="col-sm-10">
+                                <textarea type="text" class="form-control" name="descr" placeholder="任务描述"
+                                          v-model="chose.descr"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @click="addTask">Save Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer></footer>
+    <transition name="bounce">
+        <div v-if="box_show" class="alert alert-dismissible fade in bounce-box " role="alert" :class="className">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+            <strong>{{message}}</strong>
+        </div>
+    </transition>
+</div>
+<script type="text/javascript" src="index.js"></script>
+</body>
+
+</html>  
